@@ -8,6 +8,21 @@ use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
+    public function __construct()
+    {
+        // auth 中间件，是登录成功后处理
+        // 这里排除了 show、create、store ，代表这三个不需要登录
+        // 访客可以访问：用户信息页面、注册页面、注册信息保存
+        $this->middleware('auth', [
+            'except' => ['show', 'create', 'store']
+        ]);
+
+        // guest 中间件，是未登录时处理
+        // 访客，仅可访问注册页面
+        $this->middleware('guest', [
+            'only' => ['create']
+        ]);
+    }
 
     public function index()
     {
@@ -47,11 +62,14 @@ class UsersController extends Controller
 
     public function edit(User $user)
     {
+        $this->authorize('update', $user);
         return view('users.edit', compact('user'));
     }
 
     public function update(Request $request, User $user)
     {
+        $this->authorize('update', $user);
+
         $this->validate($request, [
             'name'     => 'required|max:50',
             'password' => 'nullable|confirmed|min:6'

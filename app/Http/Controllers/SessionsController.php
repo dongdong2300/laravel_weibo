@@ -7,6 +7,14 @@ use Illuminate\Support\Facades\Auth;
 
 class SessionsController extends Controller
 {
+    public function __construct()
+    {
+        // 游客，仅可以访问注册页面
+        $this->middleware('guest', [
+            'only' => ['create']
+        ]);
+    }
+
     public function create()
     {
         return view('sessions.create');
@@ -19,12 +27,14 @@ class SessionsController extends Controller
             'password' => 'required'
         ]);
 
-        if (Auth::attempt($credentials,$request->has('remember'))) {
+        if (Auth::attempt($credentials, $request->has('remember'))) {
             session()->flash('success', '欢迎回来！');
-            return redirect()->route('users.show', [Auth::user()]);
+            // return redirect()->route('users.show', [Auth::user()]);
+            $fallback = route('users.show', Auth::user());
+            return redirect()->intended($fallback); // 跳转至 [上次请求] 的页面，如果 [上次请求] 页面为空，则跳转至默认页面
         } else {
             session()->flash('danger', '很抱歉，您的邮箱和密码不匹配');
-            return redirect()->back()->withInput();
+            return redirect()->back()->withInput(); // 携带请求的表单内容，用 {{ old('xxx')) }} 调用
         }
     }
 
