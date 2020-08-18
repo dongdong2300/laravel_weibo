@@ -57,8 +57,22 @@ class User extends Authenticatable
         });
     }
 
+    /**
+     * 我的微博
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function statuses()
     {
+        //return $this->hasMany(Status::class,'id','user_id');
         return $this->hasMany(Status::class);
+    }
+
+    /**
+     * 微博瀑布流
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function feed()
+    {
+        return $this->statuses()->orderBy('created_at', 'desc');
     }
 }
